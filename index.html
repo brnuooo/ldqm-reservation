@@ -34,7 +34,7 @@ body {
   font: 400 1rem/1.5 var(--font-body);
   overflow-x: hidden;
 }
-#bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#bg { position: fixed; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
 
 .shell {
   position: relative;
@@ -147,7 +147,7 @@ h1 {
   font: 800 clamp(5rem, 16vw, 8.5rem)/1.05 var(--font-display);
   letter-spacing: -.04em; text-align: center; font-variant-numeric: tabular-nums;
 }
-.roller span { position: absolute; inset: 0; }
+.roller span { position: absolute; top: 0; right: 0; bottom: 0; left: 0; }
 .roller .up-in { animation: up-in .4s var(--ease) both; }
 .roller .up-out { animation: up-out .4s var(--ease) both; }
 .roller .dn-in { animation: dn-in .4s var(--ease) both; }
@@ -354,6 +354,10 @@ const MAX_PEOPLE = 50;
 const QUESTIONS = 5, RECAP = 5, DONE = 6;
 
 const $ = id => document.getElementById(id);
+function focusIn(root, selector) {
+  const el = root.querySelector(selector);
+  if (el) el.focus({ preventScroll: true });
+}
 const steps = [...document.querySelectorAll(".step")];
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 let current = 0, returnToRecap = false, people = 1, busy = false;
@@ -438,7 +442,8 @@ function setPeople(n, animate = true) {
 const PERSON = '<svg viewBox="0 0 22 30"><circle cx="11" cy="7" r="6"/><path d="M0 30c0-10 4-15 11-15s11 5 11 15z"/></svg>';
 function drawPeople() {
   const box = $("people"), shown = Math.min(people, 12);
-  box.querySelector("b")?.remove();
+  const extra = box.querySelector("b");
+  if (extra) extra.remove();
   while (box.children.length > shown) box.lastElementChild.remove();
   while (box.children.length < shown) box.insertAdjacentHTML("beforeend", PERSON);
   if (people > 12) {
@@ -516,7 +521,7 @@ function go(target) {
     updateChrome();
     energy = 2;
     busy = false;
-    to.querySelector("input, textarea")?.focus({ preventScroll: true });
+    focusIn(to, "input, textarea");
     if (target === DONE) burst();
   }, reduced ? 0 : 280);
 }
@@ -536,7 +541,7 @@ function fail(message) {
   void s.offsetWidth;
   s.classList.add("shake");
   s.addEventListener("animationend", () => s.classList.remove("shake"), { once: true });
-  s.querySelector(".field:not(.valid) input")?.focus({ preventScroll: true });
+  focusIn(s, ".field:not(.valid) input");
 }
 function next() {
   if (busy) return;
@@ -576,7 +581,7 @@ async function send() {
     }
     btn.removeAttribute("aria-busy");
     go(DONE);
-  } catch {
+  } catch (e) {
     btn.removeAttribute("aria-busy");
     $("nextLabel").textContent = "Réessayer";
     fail("L'envoi n'a pas abouti. Vérifiez votre connexion puis réessayez : vos réponses sont conservées.");
